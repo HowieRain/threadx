@@ -33,10 +33,12 @@
     .global     __tx_PendSVHandler                  @ PendSV
     .global     __tx_SysTickHandler                 @ SysTick
     .global     __tx_IntHandler                     @ Int 0
+	.global     __initial_sp
+	.global     __Vectors
 @
 @
-SYSTEM_CLOCK      =   6000000
-SYSTICK_CYCLES    =   ((SYSTEM_CLOCK / 100) -1)
+SYSTEM_CLOCK      =   168000000
+SYSTICK_CYCLES    =   ((SYSTEM_CLOCK / 1000) -1)
 
     .text 32
     .align 4
@@ -95,20 +97,20 @@ _tx_initialize_low_level:
 @    /* Set base of available memory to end of non-initialised RAM area.  */
 @
     LDR     r0, =_tx_initialize_unused_memory       @ Build address of unused memory pointer
-    LDR     r1, =Image$$ARM_LIB_STACKHEAP$$ZI$$Limit @ Build first free address
+    LDR     r1, =__initial_sp                       @ Build first free address
     ADD     r1, r1, #4                              @
     STR     r1, [r0]                                @ Setup first unused memory pointer
 @
 @    /* Setup Vector Table Offset Register.  */
 @
     MOV     r0, #0xE000E000                         @ Build address of NVIC registers
-    LDR     r1, =vector_table                       @ Pickup address of vector table
+    LDR     r1, =__Vectors                          @ Pickup address of vector table
     STR     r1, [r0, #0xD08]                        @ Set vector table address
 @
 @    /* Set system stack pointer from vector value.  */
 @
     LDR     r0, =_tx_thread_system_stack_ptr        @ Build address of system stack pointer
-    LDR     r1, =vector_table                       @ Pickup address of vector table
+    LDR     r1, =__Vectors                          @ Pickup address of vector table
     LDR     r1, [r1]                                @ Pickup reset stack pointer
     STR     r1, [r0]                                @ Save system stack pointer
 @
